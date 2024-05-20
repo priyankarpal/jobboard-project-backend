@@ -5,8 +5,8 @@ interface UserCreateInput {
     title: string;
     description: string;
     category: string;
-    applyDate: Date;
-    interviewDate: Date;
+    applyDate: string;
+    interviewDate: string;
     status: string;
     companyName: string;
     location: string;

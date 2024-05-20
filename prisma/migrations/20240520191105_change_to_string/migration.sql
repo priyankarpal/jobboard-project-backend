@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Create" ALTER COLUMN "applyDate" SET DATA TYPE TEXT,
+ALTER COLUMN "interviewDate" SET DATA TYPE TEXT;

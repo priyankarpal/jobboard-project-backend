@@ -40,7 +40,7 @@ importers:
         specifier: ^9.0.6
         version: 9.0.6
       '@types/node':
-        specifier: ^20.12.11
+        specifier: ^20.12.12
         version: 20.12.12
       express:
         specifier: ^4.19.2
