@@ -1,3 +1,4 @@
+import bodyParser from 'body-parser';
 import "dotenv/config";
 import express, { Application } from 'express';
 import routes from "./routes/routes";
@@ -6,6 +7,7 @@ const app: Application = express();
 
 // middlewares
 app.use(express.json());
+app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(routes);
 
