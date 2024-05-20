@@ -7,38 +7,27 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// user model
 model User {
   id         String   @id @default(uuid())
   name       String
   email      String   @unique
-  password   String
+  password   String   @default("default_password")
   created_at DateTime @default(now())
+  tasks      Create[]
 }
 
-// JobApplications model
-model JobApplications {
+model Create {
   id            String   @id @default(uuid())
-  userId        String
-  status        String
-  appliedDate   DateTime
+  title         String
+  description   String
+  category      String
+  applyDate     DateTime
   interviewDate DateTime
-  offerDate     DateTime
+  status        String
+  companyName   String
+  location      String
   jobId         String
-}
-
-// jobs
-
-model Jobs {
-  id          String @id
-  title       String
-  description String
-  companyName String
-}
-
-// Companies model
-model Companies {
-  id       String @id
-  name     String
-  industry String
+  created_at    DateTime @default(now())
+  user          User     @relation(fields: [userId], references: [id])
+  userId        String
 }

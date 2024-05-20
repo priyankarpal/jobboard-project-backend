@@ -6,7 +6,7 @@ export const createUser = async (
     req: express.Request,
     res: express.Response
 ) => {
-    const { name, email, phone } = req.body;
+    const { name, email, password } = req.body;
 
     const findUser = await prisma.user.findUnique({
         where: {
@@ -22,18 +22,16 @@ export const createUser = async (
         data: {
             name: name,
             email: email,
-            phone: phone,
+            password: password,
         },
     });
     const serializedUser = {
         ...newUser,
-        phone: newUser.phone?.toString(),
-        id: newUser.id.toString(),
         created_at: newUser.created_at.toISOString(),
     };
     return res
         .status(201)
-        .json({ data: serializedUser, message: 'new user has been created' });
+        .json({ data: serializedUser, message: 'new user created' });
 };
 
 // update a user
@@ -43,20 +41,20 @@ export const updateUser = async (
     res: express.Response
 ) => {
     const userId = req.params.id;
-    const { name, email, phone } = req.body;
+    const { name, email, password } = req.body;
     await prisma.user.update({
         where: {
-            id: Number(userId), // convert to the Number
+            id: userId,
         },
         data: {
             name,
             email,
-            phone,
+            password,
         },
     });
     return res
         .status(201)
-        .json({ data: updateUser, message: 'userdata  has been updated' });
+        .json({ data: updateUser, message: 'user updated' });
 };
 
 // get all users
@@ -65,16 +63,11 @@ export const getAllUser = async (
     req: express.Request,
     res: express.Response
 ) => {
-    const users = await prisma.user.findMany({});
-
-    const usersWithSerializedBigInt = users.map((user) => ({
-        ...user,
-        phone: user.phone?.toString(),
-    }));
-
+    const users = await prisma.user.findMany({
+    });
     return res
         .status(200)
-        .json({ message: 'All users data ', data: usersWithSerializedBigInt });
+        .json({ message: 'All users data ', data: users });
 };
 
 // find a user
@@ -86,19 +79,30 @@ export const findAUser = async (
     const userId = req.params.id;
     const user = await prisma.user.findFirst({
         where: {
-            id: Number(userId),
+            id: userId,
         },
+        include: {
+            tasks: {
+                select: {
+                    title: true,
+                    category: true,
+                    applyDate: true,
+                    companyName: true,
+                    description: true,
+                    interviewDate: true,
+                    jobId: true,
+                    location: true,
+                    status: true,
+                    created_at: true
+                }
+            }
+        }
     });
     if (!user) {
         return res.status(404).json({ message: 'User not found' });
     }
-    const userWithSerializedBigInt = {
-        ...user,
-        id: user.id.toString(),
-        phone: user.phone ? user.phone.toString() : null,
-    };
 
-    return res.status(200).json({ data: userWithSerializedBigInt });
+    return res.status(200).json({ message: "Here is an OG user", data: user });
 };
 //delete a user
 
@@ -109,16 +113,11 @@ export const deleteUser = async (
     const userId = req.params.id;
     const user = await prisma.user.delete({
         where: {
-            id: Number(userId),
+            id: userId,
         },
     });
     if (!user) {
         return res.status(404).json({ message: 'User not found' });
     }
-    const userWithSerializedBigInt = {
-        ...user,
-        id: user.id.toString(),
-        phone: user.phone ? user.phone.toString() : null,
-    };
-    return res.status(200).json({ message: 'user deleted' });
+    return res.status(200).json({ message: 'OG user deleted!' });
 };
