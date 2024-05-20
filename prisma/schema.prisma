@@ -21,8 +21,8 @@ model Create {
   title         String
   description   String
   category      String
-  applyDate     DateTime
-  interviewDate DateTime
+  applyDate     String
+  interviewDate String
   status        String
   companyName   String
   location      String
