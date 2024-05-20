@@ -63,7 +63,8 @@ export const getAllUser = async (
     req: express.Request,
     res: express.Response
 ) => {
-    const users = await prisma.user.findMany({});
+    const users = await prisma.user.findMany({
+    });
     return res
         .status(200)
         .json({ message: 'All users data ', data: users });
@@ -80,6 +81,22 @@ export const findAUser = async (
         where: {
             id: userId,
         },
+        include: {
+            tasks: {
+                select: {
+                    title: true,
+                    category: true,
+                    applyDate: true,
+                    companyName: true,
+                    description: true,
+                    interviewDate: true,
+                    jobId: true,
+                    location: true,
+                    status: true,
+                    created_at: true
+                }
+            }
+        }
     });
     if (!user) {
         return res.status(404).json({ message: 'User not found' });
