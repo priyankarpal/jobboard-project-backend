@@ -1,13 +1,22 @@
 import bcrypt from 'bcrypt';
 import express from 'express';
 import jwt from 'jsonwebtoken';
+import redis from "../cache/redis";
 import prisma from '../database/db.config';
+
+interface UserData {
+    name: string;
+    email: string;
+    password: string;
+    userId: string;
+}
+
 // create user
 export const createUser = async (
     req: express.Request,
     res: express.Response
 ) => {
-    const { name, email, password } = req.body;
+    const { name, email, password } = req.body as UserData;
     // hash the password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
@@ -65,49 +74,74 @@ export const getAllUser = async (
     res: express.Response
 ) => {
     const users = await prisma.user.findMany({});
+
+    redis.set("users", JSON.stringify(users));
+    redis.get("users", (err, result) => {
+        if (err) {
+            console.error(err);
+        } else {
+            console.log(result);
+        }
+    });
+
     return res.status(200).json({ message: 'All users data ', data: users });
 };
 
 // find a user
-
 export const findAUser = async (
     req: express.Request,
     res: express.Response
 ) => {
     const userId = req.params.id;
+
     try {
-        const user = await prisma.user.findFirst({
-            where: {
-                id: userId,
-            },
-            select: {
-                id: true,
-                email: true,
-                tasks: {
-                    select: {
-                        title: true,
-                        category: true,
-                        applyDate: true,
-                        companyName: true,
-                        description: true,
-                        interviewDate: true,
-                        jobId: true,
-                        location: true,
-                        status: true,
-                        created_at: true,
+        // Attempt to retrieve user data from Redis cache
+        redis.get(`user:${userId}`, async (error, value) => {
+            if (error) {
+                console.error('Redis Error:', error);
+            }
+
+            if (value) {
+                return res.status(200).json({ message: 'Here is an OG user', data: JSON.parse(value) });
+            } else {
+                // If user data is not found in the cache, query the database
+                const user = await prisma.user.findFirst({
+                    where: {
+                        id: userId,
                     },
-                },
-            },
+                    select: {
+                        id: true,
+                        email: true,
+                        tasks: {
+                            select: {
+                                title: true,
+                                category: true,
+                                applyDate: true,
+                                companyName: true,
+                                description: true,
+                                interviewDate: true,
+                                jobId: true,
+                                location: true,
+                                status: true,
+                                created_at: true,
+                            },
+                        },
+                    },
+                });
+
+                if (!user) {
+                    return res.status(404).json({ message: 'User not found' });
+                }
+
+                redis.set(`user:${userId}`, JSON.stringify(user));
+
+                return res.status(200).json({ message: 'Here is an OG user', data: user });
+            }
         });
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-        return res.status(200).json({ message: 'Here is an OG user', data: user });
     } catch (error) {
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
-
 
 //delete a user
 
