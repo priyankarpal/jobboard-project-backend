@@ -15,6 +15,6 @@ app.get("/", (req: express.Request, res: express.Response) => {
     res.status(200).json({ message: "Hello World!" });
 });
 
-app.listen(process.env.PORT || 3002, () => {
+app.listen(process.env.PORT!, () => {
     console.log(`Server running on localhost:${process.env.PORT}`);
 });
